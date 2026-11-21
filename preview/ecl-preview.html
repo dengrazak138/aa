@@ -243,12 +243,13 @@ function weight(c,x,y,s,top,glow=0,rot=0,sub='MILLION'){c.save();c.translate(x,y
   line(c,-112,-200,-128,-40,10,'rgba(255,255,255,.35)');
   if(sub){label(c,top,0,-148,92,'#fff');label(c,sub,0,-72,44,'#fff')}else label(c,top,0,-115,100,'#fff');
   c.restore()}
-function stamp(c,x,y,s=1){c.save();c.translate(x,y);c.scale(s,s);
+function stamp(c,x,y,s=1,txt=''){c.save();c.translate(x,y);c.scale(s,s);
   rrect(c,-270,-46,540,46,8);fs(c,'#3a2730',8);
   rrect(c,-255,-160,510,118,22);fs(c,'#d8333a',9);
   c.save();rrect(c,-255,-160,510,118,22);c.clip();c.fillStyle='#ab2530';c.fillRect(120,-170,160,140);c.restore();
   rrect(c,-58,-320,116,170,18);fs(c,'#b22a32',9);
   ell(c,0,-352,135,72);fs(c,'#ea4950',9);ell(c,-50,-372,40,18,-.2);c.fillStyle='rgba(255,255,255,.45)';c.fill();
+  if(txt)label(c,txt,0,-100,62,'#ffffff');
   c.restore()}
 function scooter(c,x,y,s,tilt){c.save();c.translate(x+120*s,y);c.rotate(tilt);c.translate(-120*s,0);c.translate(x,0);c.translate(-x,0);c.scale(s,s);
   const T='#3fc3b2',TS='#2a9c8e';
@@ -336,7 +337,7 @@ function cam(c,z,cx,cy,sh=[0,0]){c.save();c.translate(W/2+sh[0],H/2+sh[1]);c.sca
 function s1(c,t){
   cam(c,lerp(1.18,1,eOut(seg(t,0,1.4))),540,1000,shake(t,6.25,48,1.1));
   bgVault(c,t);
-  shadow(c,300,FY+10,320,.25);pile(c,300,FY,1,t);
+  const p1=t<6.25?1:lerp(1,.78,eOut(seg(t,6.25,7.3)));shadow(c,300,FY+10,320*p1,.25);pile(c,300,FY,p1,t);
   if(t>5&&t<8.2){const k=seg(t,5,6.25)*(1-seg(t,7.4,8.1));shadow(c,740,FY+8,lerp(60,300,k),.45*k)}
   const st={x:740,y:FY,s:1.5,t};
   if(t<5.3){const b=Math.abs(Math.sin(t*6));Object.assign(st,{y:FY-b*48,sy:.93+.07*b,sx:1.04-.04*b,rot:Math.sin(t*3)*.08,armL:2.4+Math.sin(t*6)*.5,armR:2.4-Math.sin(t*6)*.5,eyes:Math.sin(t*1.7)>0?'happy':'open',mouth:'grin',legL:Math.sin(t*6)*.25,legR:-Math.sin(t*6)*.25,blush:.6})}
@@ -350,11 +351,13 @@ function s1(c,t){
   for(let k=0;k<9;k++){const tk=.4+k*.6;if(tk>5.2)break;const a=t-tk;if(a<0||a>1.8)continue;const hx=740+(k%2?-190:190),hy=FY-640;for(let j=0;j<5;j++){const vx=(rnd(k*10+j)-.5)*800,vy=-900-rnd(k*10+j+5)*500;coin(c,hx+vx*a,hy+vy*a+1100*a*a,28,a*12+j)}}
   // stamp
   let sy=null;if(t>=5.9&&t<6.25)sy=lerp(-700,FY,eIn(seg(t,5.9,6.25)));else if(t>=6.25&&t<7.4)sy=FY-Math.max(0,Math.sin((t-6.25)*30)*Math.exp(-(t-6.25)*8)*30);else if(t>=7.4&&t<8.3)sy=lerp(FY,-800,eIn(seg(t,7.4,8.2)));
-  if(sy!==null)stamp(c,740,sy,1);
-  flying(c,coinBurst(t,6.25,740,FY-40,26,100));
+  if(sy!==null)stamp(c,740,sy,1,'RM3 MILLION');
+  if(t>3.4&&t<5.9){for(let i=0;i<4;i++){const u=seg(t,3.4+i*.35,4.4+i*.35);if(u<=0||u>=1)continue;const x=lerp(300,-150,u),y=FY-300-Math.sin(u*PI)*420;c.save();c.translate(x,y);c.rotate(u*6);rrect(c,-60,-38,120,76,8);fs(c,'#f4f1e6',6);c.beginPath();c.moveTo(-60,-38);c.lineTo(0,6);c.lineTo(60,-38);c.lineWidth=5;c.strokeStyle=INK;c.stroke();coin(c,0,18,16,0);c.restore()}}
+  flying(c,coinBurst(t,6.25,740,FY-40,26,100));flying(c,coinBurst(t,6.3,300,FY-150,18,150,1400,1300));
   if(t>=6.25)burst(c,740,FY-80,lerp(220,460,seg(t,6.25,6.6)),1-seg(t,6.3,6.7),t);
   dust(c,740,FY,6.25,t,1.4);
   if(t>1){let rot=0,yy=470+Math.sin(t*2)*14;if(t>6.25){const k=eOut(seg(t,6.25,6.6));rot=-.1*k;yy+=40*k}label(c,'RM10 MILLION',540,yy,138,'#ffd23f',{scale:eBack(seg(t,1,1.5)),rot})}
+  if(t>6.9){const k=eOut(seg(t,6.9,7.3));label(c,'- RM3 MILLION',lerp(1500,540,k),640,112,'#ff5b5b',{rot:.02})}
   c.restore();
 }
 
@@ -363,8 +366,8 @@ function s2(c,t){
   const zin=eIO(seg(t,3.6,4.4))-eIO(seg(t,7,7.6));
   cam(c,1+.14*zin,lerp(540,660,zin),lerp(1000,1060,zin),addShake(shake(t,3,32,.6),shake(t,7.2,26,.5)));
   bgVault(c,t);
-  const ps=t<8?1:lerp(1,.72,eIO(seg(t,8,8.9)));shadow(c,250,FY+10,320*ps,.25);pile(c,250,FY,ps,t);
-  if(t>7.5){label(c,'RM10 MILLION',540,330,112,'#ffd23f',{scale:eBack(seg(t,7.5,7.9))});const k=eOut(seg(t,7.9,8.3));label(c,'- RM2 MILLION',lerp(1500,540,k),470,112,'#ff5b5b')}
+  const ps=t<8?.78:lerp(.78,.6,eIO(seg(t,8,8.9)));shadow(c,250,FY+10,320*ps,.25);pile(c,250,FY,ps,t);
+  if(t>7.5){label(c,'RM10 MILLION',540,290,100,'#ffd23f',{scale:eBack(seg(t,7.5,7.9))});label(c,'- RM3 MILLION',540,405,92,'#ff8a8a',{scale:eBack(seg(t,7.6,8))});const k=eOut(seg(t,7.9,8.3));label(c,'- RM2 MILLION',lerp(1500,540,k),520,100,'#ff5b5b')}
   const bx=t<2.2?lerp(1250,700,seg(t,0,2.2)):700;
   if(t<3.6){
     if(t>2.3){const wy=lerp(-500,FY,eIn(seg(t,2.3,3)));shadow(c,940,FY+8,180*seg(t,2.3,3),.35);weight(c,940,wy,1,'RM2',0,0)}
@@ -401,7 +404,7 @@ function s3(c,t){
   const zo=eIO(seg(t,4.1,4.6))-eIO(seg(t,7.2,7.8));
   cam(c,1-.12*zo,540,lerp(1000,900,zo),addShake(shake(t,5,72,1.3),shake(t,7.1,36,.5)));
   bgVault(c,t);
-  const ps=t<5?.72:lerp(.72,.3,eOut(seg(t,5,5.8)));shadow(c,250,FY+10,320*ps,.25);pile(c,250,FY,ps,t);
+  const ps=t<5?.6:lerp(.6,.26,eOut(seg(t,5,5.8)));shadow(c,250,FY+10,320*ps,.25);pile(c,250,FY,ps,t);
   // weight
   let wx=880,wy=FY,ws=.78,top='RM2',glow=0;
   if(t>2.6&&t<3.6){const k=seg(t,2.6,3.6);wx+=Math.sin(t*70)*7*k;glow=k}
@@ -861,8 +864,8 @@ const SCENES=[
    cues:[[.5,'tiptoe'],[8,'gulp'],[11.5,'pop'],[16.5,'wind'],[20,'pop']]},
   {title:'Pembiayaan cantik vs tak cantik',sub:'Even good loans get a little ECL; as Abu turns yellow then red, the bucket fills.',dur:41,draw:sJ,
    cues:[[7.5,'coin'],[9.7,'coin'],[12,'coin'],[14.2,'coin'],[19.8,'pop'],[22,'slide'],[24,'gulp'],[27,'rumble'],[31,'whoosh'],[37,'thud']]},
-  {title:'RM10 Million income',sub:'Banker celebrates beside the gold, then a giant stamp flattens him.',dur:10,draw:SC(s1,11,10),
-   cues:SCALE([[.4,'coin'],[1,'pop'],[1.6,'coin'],[2.8,'coin'],[4,'coin'],[5.3,'fall'],[6.25,'crash'],[8.6,'boing'],[9.7,'twinkle']],11,10)},
+  {title:'RM10 Million income − RM3 Million expenses',sub:'Salary envelopes fly out, then a giant RM3 MILLION expenses stamp flattens him and shrinks the gold.',dur:10,draw:SC(s1,11,10),
+   cues:SCALE([[.4,'coin'],[1,'pop'],[1.6,'coin'],[2.8,'coin'],[3.4,'whoosh'],[4,'coin'],[6.9,'pop'],[7.1,'slide'],[5.3,'fall'],[6.25,'crash'],[8.6,'boing'],[9.7,'twinkle']],11,10)},
   {title:'Impairment RM2 Million',sub:'A red RM2 MILLION weight lands; he struggles to balance it against the gold.',dur:8,draw:SC(s2,11,8),
    cues:SCALE([[.1,'step'],[2.3,'fall'],[3,'thud'],[3.6,'poof'],[4.3,'strain'],[7.2,'thud'],[7.5,'pop'],[7.9,'whoosh'],[8,'slide'],[9.2,'gulp']],11,8)},
   {title:'Impairment rises to RM5 Million',sub:'The weight grows to RM5 MILLION, launches him like a rocket and shrinks the gold.',dur:14,draw:SC(s3,11,14),
