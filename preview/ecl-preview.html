@@ -797,20 +797,49 @@ function sI1(c,t){
   if(t>8.2&&t<14.7){qm(c,bx-180,620,t,8.3);qm(c,bx+180,560,t,8.7)}
   c.restore();
 }
-/* ---------- I2 · Umbrella before the storm: ECL under IFRS 9 (03:21) ---------- */
+/* ---------- I2 · Dig into the DUIT tabung, fill the IMPAIRMENT tabung as credit risk rises (03:21) ---------- */
+function tabung(c,x,y,s,fill,txt,col,ts=62){c.save();c.translate(x,y);c.scale(s,s);
+  rrect(c,-170,-420,340,420,60);fs(c,col,10);
+  c.save();rrect(c,-170,-420,340,420,60);c.clip();c.fillStyle='rgba(20,15,40,.18)';c.fillRect(90,-430,100,440);c.restore();
+  rrect(c,-60,-436,120,30,12);fs(c,'#2a2633',7);
+  rrect(c,-125,-360,250,250,34);fs(c,'#2a2633',8);
+  c.save();rrect(c,-121,-356,242,242,30);c.clip();const top=-114-236*fill;
+  for(let r=0;r<12;r++)for(let k=0;k<6;k++){const yy=-130-r*22,xx=-105+k*42+(r%2)*20;if(yy<top)continue;c.save();c.translate(xx,yy);c.scale(1,.55);ell(c,0,0,24,24);fs(c,(r+k)%3?'#ffd23f':'#ffe680',5);c.restore()}
+  c.restore();ell(c,-80,-320,18,30,.3);c.fillStyle='rgba(255,255,255,.25)';c.fill();
+  label(c,txt,0,-58,ts,'#ffffff');c.restore()}
+const i2Phase=t=>t<5?-1:t<8?(t-5)/2.2:t<16?(3/2.2)+(t-8)/1.2:(3/2.2)+(8/1.2)+(t-16)/.6;
+const i2Prog=t=>t<5?0:Math.pow((t-5)/19,1.4);
 function sI2(c,t){
-  cam(c,1,540,1000);
-  bgSky(c,t,true);
-  c.save();c.translate(900,260);c.rotate(t*.3);star(c,0,0,110,12,0,.75);fs(c,'#ffd23f',8);c.restore();
-  const cx=lerp(-450,560,eIO(seg(t,0,15)));
-  if(t>20)label(c,'IFRS 9',540,190,150,'#ffffff',{scale:eBack(seg(t,20,20.4))});
-  rainCloud(c,cx,460,1.4,t,seg(t,16.3,17),0);
-  const w=walk(t,6),b={x:600,y:FY,s:1.35,t,eyes:blinkEyes(t,'happy'),mouth:'smile',armL:.3,armR:.3};
-  if(t<8)Object.assign(b,{legL:w.legL*.5,legR:w.legR*.5,y:FY-w.yb*.6,armR:.3+Math.sin(t*6)*.2,look:t>3.5&&t<5?[-1,-1]:[0,0],eyes:t>3.5&&t<5?'open':blinkEyes(t,'happy'),headTilt:Math.sin(t*3)*.06});
-  else if(t<11.5)Object.assign(b,{armL:2.7,armR:2.7,look:[-1,-1],eyes:'open',bulge:1.25,mouth:'o',brow:'up'});
-  else Object.assign(b,{armR:2.95,armL:.3,look:[-1,-.6],eyes:blinkEyes(t),mouth:t>16.5?'grin':'smile'});
-  shadow(c,600,FY+8,140,.25);banker(c,b);
-  if(t>11.5){const k=eBack(seg(t,11.5,12.3));const hx=600+1.35*(94+Math.sin(2.95)*138),hy=FY+1.35*(-268+Math.cos(2.95)*138);umbrella(c,hx+10,hy-330*k*1.1+20,k*1.1,t>16?'ECL':'')}
+  cam(c,1,540,1000,t>16?shake(t,Math.floor(t*1.6)/1.6,6,.3):[0,0]);
+  bgBranch(c,t);
+  const v=clamp(.1+.2*eIO(seg(t,4,8))+.35*eIO(seg(t,8,16))+.32*eIO(seg(t,16,22))+(t>16?Math.sin(t*28)*.015:0),0,1);
+  const red=seg(v,.68,.8);
+  if(red>0){c.save();c.globalAlpha=red*(.18+.14*Math.sin(t*10));c.fillStyle='#ff2a2a';c.fillRect(-700,-700,W+1400,3000);c.restore()}
+  label(c,'CREDIT RISK',540,210,96,v>.68?RED:v>.36?'#ffc93c':'#ffffff',{scale:eBack(seg(t,.2,.55))});
+  c.save();c.translate(540,500);const gk=eBack(seg(t,0,.4));c.scale(gk,gk);gauge(c,0,0,1.05,v);c.restore();
+  if(t>16)label(c,'IFRS 9',930,120,64,'#ffffff',{scale:eBack(seg(t,16,16.35))});
+  const pr=i2Prog(t),bigFill=1-.55*pr,impFill=.94*pr;
+  const BX=235,SX=880;
+  shadow(c,BX,FY+10,220,.25);tabung(c,BX,FY,1.12,bigFill,'DUIT','#2fa85a',78);
+  const sk=.78+.08*Math.sin(seg(t,23,24)*PI);shadow(c,SX,FY+10,130,.25);tabung(c,SX,FY,sk,impFill,'IMPAIRMENT','#e2513f',50);
+  // banker transfer cycle
+  const ph=i2Phase(t),p=ph<0?-1:ph-Math.floor(ph),n=t<8?1:t<16?2:3;
+  const b={x:565,y:FY,s:1.28,t,eyes:blinkEyes(t),mouth:'smile',look:[0,-1],armL:.3,armR:.3};
+  if(t<5)Object.assign(b,{look:[0,-1],brow:t>3?'worried':'normal',mouth:t>3?'o':'smile'});
+  else{
+    const reach=p<.35?eOut(p/.35):p<.5?1:p<.85?1-eIO((p-.5)/.35):0,give=p<.5?0:p<.85?eIO((p-.5)/.35):1-eOut((p-.85)/.15);
+    Object.assign(b,{armL:lerp(.6,1.95,reach),armR:lerp(.6,1.75,give),rot:-.14*reach+.12*give,look:[reach>give?-1:1,.4],mouth:t<16?'grit':'o',brow:t<16?'normal':'worried',sweat:t>12?1:0,bulge:t>16?1.25:1,y:FY-(t>16?Math.abs(Math.sin(t*12))*10:0)});
+  }
+  shadow(c,b.x,FY+8,130,.25);banker(c,b);
+  if(p>=0){
+    const from=[BX,FY-490],to=[SX,FY-sk*440-10];
+    for(let i=0;i<n;i++){
+      const pp=p-i*.03;
+      if(pp>.33&&pp<.5){const a=1.95,hx=b.x-1.28*(94+Math.sin(a)*138)+i*16,hy=FY+1.28*(-268+Math.cos(a)*138)-10;coin(c,hx,hy-i*12,24,t*6+i)}
+      if(pp>=.5&&pp<.9){const u=eIO((pp-.5)/.4);coin(c,lerp(from[0],to[0],u)+i*14,lerp(from[1],to[1],u)-Math.sin(u*PI)*300-i*14,26,u*12+i)}
+    }
+    if(p>.05&&p<.4){for(let i=0;i<3;i++){const u=(p*6+i/3)%1;coin(c,BX-40+i*40,FY-450-u*60,14,u*10)}}
+  }
   c.restore();
 }
 /* ---------- J · Good loans still need ECL; worse loans need more (03:45) ---------- */
@@ -893,8 +922,8 @@ const SCENES=[
    cues:[[.1,'slide'],[2.5,'pop'],[10.3,'poof'],[14.6,'crash'],[16.5,'sad'],[22.6,'rumble'],[22.8,'pop'],[32.5,'gulp']]},
   {title:'Credit risk tightrope',sub:'Abu lets go of the rope; the ECL safety net catches the banker.',dur:24,draw:sI1,
    cues:[[0,'whack'],[2.2,'pop'],[2.4,'tiptoe'],[8.3,'pop'],[8.7,'pop'],[17,'whack'],[17.2,'fall'],[18,'boing'],[21,'twinkle']]},
-  {title:'Payung sebelum hujan',sub:'Banker opens the ECL umbrella before the storm hits. IFRS 9.',dur:24,draw:sI2,
-   cues:[[.5,'tiptoe'],[8,'gulp'],[11.5,'pop'],[16.5,'wind'],[20,'pop']]},
+  {title:'Tabung DUIT → tabung IMPAIRMENT',sub:'As the credit-risk meter climbs into the red, the banker digs more and more money out of the DUIT tabung into the IMPAIRMENT tabung.',dur:24,draw:sI2,
+   cues:(()=>{const q=[[0,'pop'],[.2,'pop'],[3.2,'gulp'],[4,'rumble'],[8,'rumble'],[16,'rumble'],[16,'pop'],[19,'rumble'],[22,'rumble']];let last=Math.floor(i2Phase(5)-.88);for(let t=5;t<24;t+=.01){const k=Math.floor(i2Phase(t)-.88);if(k>last){q.push([t,'coin']);last=k}}return q})()},
   {title:'Pembiayaan cantik vs tak cantik',sub:'Even good loans get a little ECL; as Abu turns yellow then red, the bucket fills.',dur:41,draw:sJ,
    cues:[[7.5,'coin'],[9.7,'coin'],[12,'coin'],[14.2,'coin'],[19.8,'pop'],[22,'slide'],[24,'gulp'],[27,'rumble'],[31,'whoosh'],[37,'thud']]},
   {title:'RM10 Million income − RM3 Million expenses',sub:'Salary envelopes fly out, then a giant RM3 MILLION expenses stamp flattens him and shrinks the gold.',dur:10,draw:SC(s1,11,10),
