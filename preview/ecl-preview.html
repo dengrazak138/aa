@@ -100,6 +100,7 @@ label.chk{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.
 </div>
 
 <script src="vo-data.js"></script>
+<script src="face-data.js"></script>
 <script>
 (()=>{
 const W=1080,H=1920,INK='#1d1a2b',FY=1480;
@@ -980,12 +981,24 @@ const SFX={
 function sfx(n){if(!AC||muted||AC.state!=='running')return;try{SFX[n]&&SFX[n]()}catch(e){}}
 
 /* ---------- stutter cover: presenter's face, blurred (03:05.5–03:12.5) ---------- */
-const FACE_IN=185.3,FACE_OUT=192.55;let faceImg=null;
-if(window.FACE_SRC){faceImg=new Image();faceImg.onload=()=>draw();faceImg.src=window.FACE_SRC}
-function faceOverlay(c,T){if(!faceImg||T<FACE_IN-.3||T>FACE_OUT+.3)return;const a=Math.min(seg(T,FACE_IN-.3,FACE_IN),1-seg(T,FACE_OUT,FACE_OUT+.3));if(a<=0)return;const u=T-FACE_IN;
-  c.save();c.globalAlpha=a;c.fillStyle='#1b1822';c.fillRect(0,0,W,H);
-  if(faceImg&&faceImg.complete&&faceImg.naturalWidth){const iw=faceImg.naturalWidth,ih=faceImg.naturalHeight,k=Math.max(W/iw,H/ih)*(1.06+u*.012);c.translate(W/2+Math.sin(u*.9)*10,H/2+Math.sin(u*1.3)*8);c.rotate(Math.sin(u*.7)*.008);c.drawImage(faceImg,-iw*k/2,-ih*k/2,iw*k,ih*k)}
-  else{c.fillStyle='#2c2838';c.fillRect(0,0,W,H);label(c,'FACE',W/2,H/2,140,'#ffffff')}
+const FACE_IN=185.3,FACE_OUT=192.55,DIZZY=189.7;let FC=null;
+if(window.FACE){const F=window.FACE,ld=src=>{const im=new Image();im.onload=()=>draw();im.src=src;return im};FC={F,base:ld(F.base),blur:ld(F.blur),frames:F.frames.map(ld)}}
+const okImg=im=>im&&im.complete&&im.naturalWidth>0;
+function faceOverlay(c,T){
+  if(!FC||T<FACE_IN-.3||T>FACE_OUT+.3)return;const a=Math.min(seg(T,FACE_IN-.3,FACE_IN),1-seg(T,FACE_OUT,FACE_OUT+.3));if(a<=0||!okImg(FC.base))return;
+  const F=FC.F,u=T-FACE_IN,dz=eIO(seg(T,DIZZY,DIZZY+1.4)),k=Math.max(W/F.bw,H/F.bh);
+  const ei=clamp(Math.floor((T-F.t0)*F.fps),0,F.env.length-1),v=F.env[ei],lvl=clamp(Math.round(v*4.4),0,4);
+  const place=(z,dx,dy,rot)=>{c.translate(W/2+dx,H*.47+dy);c.rotate(rot);c.scale(k*z,k*z);c.translate(-F.fcx,-F.fcy)};
+  c.save();c.globalAlpha=a;c.fillStyle='#14121a';c.fillRect(0,0,W,H);
+  const z=1.04+u*.012+dz*.06,sway=Math.sin(u*3.1)*.045*dz,bob=Math.sin(u*2.2)*6;
+  const face=(alpha,dx,dy,rot)=>{c.save();c.globalAlpha=a*alpha;place(z,dx,dy+bob,rot);c.drawImage(FC.base,0,0,F.bw,F.bh);const fr=FC.frames[lvl];if(okImg(fr))c.drawImage(fr,F.px,F.py,fr.naturalWidth,fr.naturalHeight);c.restore()};
+  face(1,0,0,sway);
+  if(dz>0){
+    for(const sd of[-1,1])face(.34*dz,sd*55*dz*Math.cos(u*4.2),sd*22*dz*Math.sin(u*3.3),sway+sd*.03*dz);
+    if(okImg(FC.blur)){c.save();c.globalAlpha=a*.82*dz;place(z,0,bob,sway);c.drawImage(FC.blur,0,0,F.bw,F.bh);c.restore()}
+    c.save();c.globalAlpha=a*.5*dz;const g=c.createRadialGradient(W/2,H/2,H*.2,W/2,H/2,H*.75);g.addColorStop(0,'rgba(120,60,200,0)');g.addColorStop(1,'rgba(60,20,110,.9)');c.fillStyle=g;c.fillRect(0,0,W,H);c.restore();
+    for(let q=0;q<5;q++){const an=u*4+q*PI*2/5,sx=W/2+Math.cos(an)*300,sy=H*.27+Math.sin(an)*70;c.save();c.globalAlpha=a*dz;star(c,sx,sy,40,5,u*3+q,.45);fs(c,'#ffe34a',7);c.restore()}
+  }
   c.restore()}
 /* ---------- player ---------- */
 const cv=document.getElementById('cv'),c=cv.getContext('2d');
