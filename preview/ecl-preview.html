@@ -988,7 +988,7 @@ function faceOverlay(c,T){
   if(!FC||T<FACE_IN-.3||T>FACE_OUT+.3)return;const a=Math.min(seg(T,FACE_IN-.3,FACE_IN),1-seg(T,FACE_OUT,FACE_OUT+.3));if(a<=0||!okImg(FC.base))return;
   const F=FC.F,u=T-FACE_IN,dz=eIO(seg(T,DIZZY,DIZZY+1.4)),k=Math.max(W/F.bw,H/F.bh);
   const ei=clamp(Math.floor((T-F.t0)*F.fps),0,F.env.length-1),v=F.env[ei],lvl=clamp(Math.round(v*4.4),0,4);
-  const place=(z,dx,dy,rot)=>{c.translate(W/2+dx,H*.47+dy);c.rotate(rot);c.scale(k*z,k*z);c.translate(-F.fcx,-F.fcy)};
+  const place=(z,dx,dy,rot)=>{c.translate(W*.6+dx,H*.47+dy);c.rotate(rot);c.scale(k*z,k*z);c.translate(-F.fcx,-F.fcy)};
   c.save();c.globalAlpha=a;c.fillStyle='#14121a';c.fillRect(0,0,W,H);
   const z=1.04+u*.012+dz*.06,sway=Math.sin(u*3.1)*.045*dz,bob=Math.sin(u*2.2)*6;
   const face=(alpha,dx,dy,rot)=>{c.save();c.globalAlpha=a*alpha;place(z,dx,dy+bob,rot);c.drawImage(FC.base,0,0,F.bw,F.bh);const fr=FC.frames[lvl];if(okImg(fr))c.drawImage(fr,F.px,F.py,fr.naturalWidth,fr.naturalHeight);c.restore()};
